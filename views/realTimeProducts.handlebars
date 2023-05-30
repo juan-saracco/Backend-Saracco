@@ -1,0 +1,46 @@
+<h1>Lista de productos en tiempo real</h1>
+<ul id="productos-lista">
+  {{#each productos}}
+  <li>{{this}}</li>
+  {{/each}}
+</ul>
+
+<form id="formulario-producto">
+  <input type="text" id="producto-nombre" placeholder="Nombre del producto">
+  <button type="submit">Agregar Producto</button>
+</form>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  // Conexión al servidor WebSocket
+  const socket = io();
+
+  // Manejo del evento de creación de producto
+  socket.on('productoCreado', (producto) => {
+    const lista = document.getElementById('productos-lista');
+    const nuevoProducto = document.createElement('li');
+    nuevoProducto.textContent = producto;
+    lista.appendChild(nuevoProducto);
+  });
+
+  // Manejo del evento de eliminación de producto
+  socket.on('productoEliminado', (productoId) => {
+    const lista = document.getElementById('productos-lista');
+    const productos = lista.getElementsByTagName('li');
+    for (let i = 0; i < productos.length; i++) {
+      if (productos[i].textContent === productoId) {
+        productos[i].remove();
+        break;
+      }
+    }
+  });
+
+  // Envío del formulario mediante WebSocket
+  const formulario = document.getElementById('formulario-producto');
+  formulario.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const productoNombre = document.getElementById('producto-nombre').value;
+    socket.emit('nuevoProducto', productoNombre);
+    formulario.reset();
+  });
+</script>
